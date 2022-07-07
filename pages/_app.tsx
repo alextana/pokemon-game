@@ -2,9 +2,17 @@ import { withTRPC } from '@trpc/next';
 import { AppType } from 'next/dist/shared/lib/utils';
 import { AppRouter } from './api/trpc/[trpc]';
 import '../styles/globals.css'
+import { ChakraProvider } from '@chakra-ui/react'
+import { SessionProvider } from "next-auth/react"
 
 const MyApp: AppType = ({ Component, pageProps }) => {
-  return <Component {...pageProps} />;
+  return (
+    <SessionProvider>
+      <ChakraProvider>
+        <Component {...pageProps} />
+      </ChakraProvider>
+    </SessionProvider>
+  );
 };
 
 export default withTRPC<AppRouter>({
