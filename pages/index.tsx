@@ -1,9 +1,6 @@
 import React from 'react'
 import AccessDenied from 'components/auth/AccessDenied'
-import { useSession, getSession } from 'next-auth/react'
-import type { Session } from "next-auth"
-import { GetServerSideProps } from 'next'
-import { PrismaClient } from '@prisma/client'
+import { useSession } from 'next-auth/react'
 
 export default function Home() {
 
@@ -15,40 +12,8 @@ if (loading) { return <div>loading...</div>}
 
 if (!session) { return <AccessDenied/>}
   return (
-    <p>welcome {session?.user?.name}</p>
+    <div className="game-screen container mx-auto">
+      <p>welcome {session?.user?.name}</p>
+    </div>
   )
-}
-
-export const getServerSideProps: GetServerSideProps<{session: Session | null}> = async (context) => {
-  const prisma = new PrismaClient()
-  const session = await getSession(context)
-
-  if (session?.user?.email) {
-    const user = await prisma.user.findUnique({
-      where: {
-        email: session?.user?.email,
-      }
-    })
-
-    if (user) {
-      return {
-        props: {
-          session
-        }
-      }
-    }
-
-    const createUser = await prisma.user.create({
-      data: {
-        email: session?.user?.email,
-        name: session?.user?.name,
-      },
-    })
-  }
-
-  return {
-    props: {
-      session,
-    },
-  }
 }
