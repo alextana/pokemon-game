@@ -15,6 +15,8 @@ model User {
   email   String   @unique
   name    String?
   capturedPokemons  Int[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
 }
 
 model Pokemon {

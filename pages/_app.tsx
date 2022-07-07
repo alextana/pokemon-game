@@ -4,11 +4,13 @@ import { AppRouter } from './api/trpc/[trpc]';
 import '../styles/globals.css'
 import { ChakraProvider } from '@chakra-ui/react'
 import { SessionProvider } from "next-auth/react"
+import Header from 'components/layout/Header';
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <SessionProvider>
       <ChakraProvider>
+        <Header/>
         <Component {...pageProps} />
       </ChakraProvider>
     </SessionProvider>
