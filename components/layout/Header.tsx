@@ -10,7 +10,7 @@ export default function Header() {
 
   if (status === "authenticated") {
     return (
-      <div className="flex justify-end gap-3 items-center w-screen container py-2">
+      <div className="flex fixed top-0 px-4 lg:px-0 justify-end gap-3 items-center w-full xl:container py-2">
         <Avatar src={session?.user?.image || ''} name={session?.user?.name || ''} />
         <div className="logout">
           <Link href="/api/auth/signout">
