@@ -6,17 +6,6 @@ import { prisma } from '../../../utils/prisma'
 
 export const appRouter = trpc
   .router()
-  .query('get-user-by-id', {
-    input: z.object({ id: z.number() }),
-    async resolve({ input }) {
-      const user = await prisma.user.findMany({
-        where: {
-          id: input.id,
-        },
-      })
-      return user
-    },
-  })
   .query('get-user-by-email', {
     input: z.object({ email: z.string() }),
     async resolve({ input }) {

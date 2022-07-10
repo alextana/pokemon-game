@@ -43,7 +43,7 @@ export default function Home({
   // only goes through if completed tasks doesn't have
   // intro
   if (
-    !completedTasks.find((t) => t === 'intro') &&
+    !completedTasks?.find((t) => t === 'intro') &&
     !tasks.find((t) => t === 'intro')
   ) {
     return <Intro session={session} setTasks={setTasks} />
@@ -70,6 +70,14 @@ export const getServerSideProps: GetServerSideProps<{
         email: session?.user?.email,
       },
     })
+
+    if (!user) {
+      await prisma.user.create({
+        data: {
+          email: session?.user?.email,
+        },
+      })
+    }
 
     if (user) {
       const completedTasks = user.completedTasks
