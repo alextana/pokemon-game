@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { getRandomPokemon } from 'utils/getRandomPokemon'
 import { trpc } from 'utils/trpc'
 import type { Session } from 'next-auth'
 import TextPrompt from 'components/ui/TextPrompt'
 import { Button } from '@chakra-ui/react'
+import { User } from '@prisma/client'
+import BouncyButton from 'components/ui/BouncyButton'
 
 export default function Capture({
   session,
@@ -20,16 +22,32 @@ export default function Capture({
 
   const pokeballThrowDuration: number = 1.5
 
-  // capture logic
+  const [userData, setUserData] = useState<any>(undefined)
+  const [pokemon, setPokemon] = useState(0)
+
   const [isCapturing, setIsCapturing] = useState(false)
   const [isInside, setIsInside] = useState(false)
   const [captureIsLoading, setCaptureIsLoading] = useState(false)
   const [captureResult, setCaptureResult] = useState(false)
 
+  const [fleeIsLoading, setFleeIsLoading] = useState(false)
+  const [flee, setFlee] = useState(false)
+
+  trpc.useQuery(['get-user-by-email', { email: session?.user?.email || '' }], {
+    onSuccess: setUserData,
+  })
+
+  useEffect(() => {
+    if (userData?.currentlyFacingPokemonId) {
+      setPokemon(userData?.currentlyFacingPokemonId)
+    } else {
+      setPokemon(id)
+    }
+  }, [userData, id, pokemon])
+
   useEffect(() => {
     if (
-      // @ts-ignore
-      typeof capturePokemon?.data?.captured === 'boolean' && // @ts-ignore
+      typeof capturePokemon?.data?.captured === 'boolean' &&
       capturePokemon?.data?.captured === false
     ) {
       setIsCapturing(false)
@@ -64,12 +82,12 @@ export default function Capture({
     },
   }
 
+  // animation end listeners
   const onPokemonInside = () => {
     if (isCapturing) {
       setIsInside(true)
     }
   }
-
   const onPokeballEnd = () => {
     if (!session?.user?.email) {
       setCaptureIsLoading(false)
@@ -92,41 +110,35 @@ export default function Capture({
     setIsCapturing(!isCapturing)
   }
 
+  const handleFlee = () => {
+    setFlee(true)
+  }
+
   const handleReset = () => {
     setId(() => getRandomPokemon())
 
     updateCurrentlyFacingPokemon.mutate({
       userEmail: session?.user?.email || '',
-      pokemonId: getRandomPokemon(),
+      pokemonId: id,
     })
 
+    setUserData((prevState: User) => ({
+      ...prevState,
+      currentlyFacingPokemonId: id,
+    }))
+
+    setFlee(false)
     setCaptureResult(false)
   }
 
-  let pokemon = id
-  let user = null
-
-  // logic to keep showing the same pokemon you encountered until
-  // you take action
-  // save currently facing pokemon in the db and if it's NULL then get a random one
-  if (session?.user?.email) {
-    user = trpc.useQuery(['get-user-by-email', { email: session?.user?.email }])
-
-    if (
-      user &&
-      user.status === 'success' &&
-      !user.data?.currentlyFacingPokemonId
-    ) {
-      updateCurrentlyFacingPokemon.mutate({
-        userEmail: session?.user?.email,
-        pokemonId: pokemon,
-      })
-    } else if (
-      user &&
-      user.status === 'success' &&
-      user.data?.currentlyFacingPokemonId
-    ) {
-      pokemon = user.data.currentlyFacingPokemonId
+  const handleImageNumber = () => {
+    // add 00 if < 10 and 0 if < 100 but > 10
+    if (pokemon < 10) {
+      return `00${pokemon}`
+    } else if (pokemon > 10 && pokemon < 100) {
+      return `0${pokemon}`
+    } else {
+      return pokemon
     }
   }
 
@@ -137,100 +149,36 @@ export default function Capture({
 
   if (!pokemonToDisplay.data) return <div>No data</div>
 
-  if (captureResult)
-    return (
-      <>
-        <motion.div className='w-screen h-screen overflow-hidden bg-gradient-to-t from-slate-500 to-gray-800 text-white'>
-          <motion.div
-            className='pokemon-container top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 absolute mx-auto w-max text-center'
-            animate={{
-              opacity: 1,
-              scale: 2,
-              transformOrigin: '100%',
-              transition: {
-                type: 'spring',
-                duration: 2,
-              },
-            }}
-          >
-            {capturePokemon?.data?.captured === false && (
-              <>
-                <span>
-                  Could not capture{' '}
-                  <span className='capitalize'>
-                    {pokemonToDisplay.data.name}
-                  </span>
-                </span>
-              </>
-            )}
-            {capturePokemon?.data?.capturedPokemons?.length && (
-              <>
-                <span>
-                  <span className='capitalize'>
-                    {pokemonToDisplay.data.name}
-                  </span>{' '}
-                  has been captured!
-                </span>
-                <p>
-                  You now have {capturePokemon?.data?.capturedPokemons?.length}{' '}
-                  Pokemons!
-                </p>
-              </>
-            )}
-          </motion.div>
-          <TextPrompt>
-            {capturePokemon?.data?.captured === false && (
-              <>
-                <h2>Unlucky.. {pokemonToDisplay.data.name} ran away.</h2>
-                <div className='flex mt-2 justify-center'>
-                  <Button
-                    onClick={handleReset}
-                    colorScheme='teal'
-                    variant='solid'
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </>
-            )}
-
-            {capturePokemon?.data?.capturedPokemons?.length && (
-              <>
-                <h2>Nicely done! What would you like to do?</h2>
-                <div className='flex mt-2 justify-center'>
-                  <Button
-                    onClick={handleReset}
-                    colorScheme='teal'
-                    variant='solid'
-                  >
-                    Continue
-                  </Button>
-                </div>
-              </>
-            )}
-          </TextPrompt>
-        </motion.div>
-      </>
-    )
-
   return (
     <>
-      <div className='w-screen h-screen overflow-hidden bg-gradient-to-t from-indigo-500 to-green-400'>
+      <div className='w-screen h-screen overflow-hidden bg-gradient-to-t from-green-600 to-green-400'>
         <div className='pokemon-container top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 absolute mx-auto w-max text-center'>
-          <motion.img
-            src={`https://assets.pokemon.com/assets/cms2/img/pokedex/full/${pokemon}.png`}
-            width='400'
-            height='400'
-            initial='hidden'
-            animate={isCapturing ? 'inside' : 'visible'}
-            variants={pokemonAnimation}
-            className='max-w-full'
-            onAnimationComplete={onPokemonInside}
-            alt={pokemonToDisplay?.data?.name || 'image'}
-          />
-          <h2 className='text-6xl text-black italic font-extrabold capitalize'>
-            {pokemonToDisplay.data.name}{' '}
-          </h2>
+          <AnimatePresence>
+            {!flee && (
+              <>
+                <motion.img
+                  key={'1'}
+                  src={`https://assets.pokemon.com/assets/cms2/img/pokedex/full/${handleImageNumber()}.png`}
+                  width='400'
+                  height='400'
+                  initial='hidden'
+                  animate={isCapturing ? 'inside' : 'visible'}
+                  variants={pokemonAnimation}
+                  exit={{ scale: 0 }}
+                  className='max-w-full'
+                  onAnimationComplete={onPokemonInside}
+                  alt={pokemonToDisplay?.data?.name || 'image'}
+                />
+                <motion.h2
+                  key={'2'}
+                  className='text-6xl text-black italic font-extrabold capitalize'
+                  exit={{ scale: 0 }}
+                >
+                  {pokemonToDisplay.data.name}{' '}
+                </motion.h2>
+              </>
+            )}
+          </AnimatePresence>
         </div>
         {isCapturing && !isInside && (
           <div className='pokeball-container relative w-screen h-screen'>
@@ -239,6 +187,7 @@ export default function Capture({
               src='/images/pokeball.png'
               alt='pokeball'
               animate={isCapturing ? 'capture' : 'noCapture'}
+              exit={{ scale: 0 }}
               variants={pokeballVariants}
             />
           </div>
@@ -265,24 +214,52 @@ export default function Capture({
         )}
       </div>
       <TextPrompt>
-        <h2>
-          A wild{' '}
-          <span className='capitalize font-extrabold text-black'>
-            {pokemonToDisplay.data.name}
-          </span>{' '}
-          appeared, what would you like to do?
-        </h2>
-        <div className='grid grid-cols-2 gap-3 mt-2'>
-          <Button
-            onClick={handleCapturing}
-            isLoading={captureIsLoading}
-            colorScheme='teal'
-            variant='solid'
-          >
-            Capture!
-          </Button>
-          <Button>Flee</Button>
-        </div>
+        {flee && (
+          <>
+            <h2>
+              You have successfully ran away from{' '}
+              <span className='text-black capitalize'>
+                {pokemonToDisplay.data.name}
+              </span>
+            </h2>
+            <div className='mt-2 mx-auto text-center'>
+              <BouncyButton>
+                <Button
+                  onClick={handleReset}
+                  colorScheme='teal'
+                  variant='solid'
+                >
+                  Continue
+                </Button>
+              </BouncyButton>
+            </div>
+          </>
+        )}
+
+        {!flee && (
+          <>
+            <h2>
+              A wild{' '}
+              <span className='capitalize font-extrabold text-black'>
+                {pokemonToDisplay.data.name}
+              </span>{' '}
+              appeared, what would you like to do?
+            </h2>
+            <div className='grid grid-cols-2 gap-3 mt-2'>
+              <Button
+                onClick={handleCapturing}
+                isLoading={captureIsLoading}
+                colorScheme='teal'
+                variant='solid'
+              >
+                Capture!
+              </Button>
+              <Button onClick={handleFlee} isLoading={fleeIsLoading}>
+                Flee
+              </Button>
+            </div>
+          </>
+        )}
       </TextPrompt>
     </>
   )
