@@ -5,6 +5,7 @@ import { PrismaClient } from '@prisma/client'
 import { useSession, getSession } from 'next-auth/react'
 import Capture from 'components/game/Capture'
 import Intro from 'components/game/intro/Intro'
+import LoadingScreen from 'components/game/LoadingScreen'
 
 import type { Session } from 'next-auth'
 
@@ -31,7 +32,7 @@ export default function Home({
   */
 
   if (loading) {
-    return <div>loading...</div>
+    return <LoadingScreen />
   }
 
   if (!session) {

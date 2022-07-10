@@ -4,6 +4,7 @@
 
 @layer base {
   body {
+    overflow: hidden;
     @apply bg-slate-50;
   }
 }
