@@ -29,20 +29,35 @@ export const appRouter = trpc
     },
   })
   .mutation('capture-pokemon', {
-    input: z.object({ userId: z.number(), pokemonId: z.number() }),
+    input: z.object({ userEmail: z.string(), pokemonId: z.number() }),
+    output: z.object({
+      captured: z.optional(z.boolean()),
+      capturedPokemons: z.optional(z.any()),
+    }),
     async resolve({ input }) {
-      const updateUser = await prisma.user.update({
-        where: {
-          id: input.userId,
-        },
-        data: {
-          capturedPokemons: {
-            push: input.pokemonId,
-          },
-        },
-      })
+      // evaluate if captured or not
+      // I have two outcomes - and a base level
+      // without a base level it's a 50% chance
+      // with a base level
+      const chance = Math.ceil(Math.random() * 10)
 
-      return updateUser
+      if (chance > 5) {
+        const updateUser = await prisma.user.update({
+          where: {
+            email: input.userEmail,
+          },
+          data: {
+            capturedPokemons: {
+              push: input.pokemonId,
+            },
+          },
+        })
+        return updateUser
+      }
+
+      return {
+        captured: false,
+      } as any
     },
   })
   .mutation('add-task-to-user', {
@@ -61,7 +76,10 @@ export const appRouter = trpc
     },
   })
   .mutation('update-currently-facing-pokemon', {
-    input: z.object({ userEmail: z.string(), pokemonId: z.number() }),
+    input: z.object({
+      userEmail: z.string(),
+      pokemonId: z.number().nullable(),
+    }),
     async resolve({ input }) {
       const updatePokemonId = await prisma.user.update({
         where: {
