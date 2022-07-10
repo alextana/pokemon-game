@@ -1,21 +1,21 @@
-import { withTRPC } from '@trpc/next';
-import { AppType } from 'next/dist/shared/lib/utils';
-import { AppRouter } from './api/trpc/[trpc]';
+import { withTRPC } from '@trpc/next'
+import { AppType } from 'next/dist/shared/lib/utils'
+import { AppRouter } from './api/trpc/[trpc]'
 import '../styles/globals.css'
 import { ChakraProvider } from '@chakra-ui/react'
-import { SessionProvider } from "next-auth/react"
-import Header from 'components/layout/Header';
+import { SessionProvider } from 'next-auth/react'
+import Header from 'components/layout/Header'
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <SessionProvider>
       <ChakraProvider>
-        <Header/>
+        <Header />
         <Component {...pageProps} />
       </ChakraProvider>
     </SessionProvider>
-  );
-};
+  )
+}
 
 export default withTRPC<AppRouter>({
   config({ ctx }) {
@@ -23,9 +23,10 @@ export default withTRPC<AppRouter>({
      * If you want to use SSR, you need to use the server's full URL
      * @link https://trpc.io/docs/ssr
      */
+    console.log('url', process.env.VERCEL_URl)
     const url = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}/api/trpc`
-      : 'http://localhost:3000/api/trpc';
+      : 'http://localhost:3000/api/trpc'
 
     return {
       url,
@@ -33,10 +34,10 @@ export default withTRPC<AppRouter>({
        * @link https://react-query.tanstack.com/reference/QueryClient
        */
       // queryClientConfig: { defaultOptions: { queries: { staleTime: 60 } } },
-    };
+    }
   },
   /**
    * @link https://trpc.io/docs/ssr
    */
   ssr: false,
-})(MyApp);
+})(MyApp)
