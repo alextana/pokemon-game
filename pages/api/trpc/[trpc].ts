@@ -30,7 +30,7 @@ export const appRouter = trpc
       // with a base level
       const chance = Math.ceil(Math.random() * 10)
 
-      if (chance > 5) {
+      if (chance > 3) {
         const updateUser = await prisma.user.update({
           where: {
             email: input.userEmail,

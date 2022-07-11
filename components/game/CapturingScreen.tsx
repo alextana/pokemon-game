@@ -16,10 +16,10 @@ export default function CapturingScreen({
     <>
       <motion.div
         exit={{ opacity: 0 }}
-        className='w-screen h-screen overflow-hidden bg-gradient-to-t from-slate-500 to-gray-800 text-white'
+        className='w-screen break-normal h-screen overflow-hidden bg-gradient-to-t from-white to-gray-400 text-gray-800'
       >
         <motion.div
-          className='pokemon-container top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 absolute mx-auto w-max text-center'
+          className='pokemon-container break-normal top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 absolute mx-auto text-center'
           animate={{
             opacity: 1,
             scale: 2,
@@ -54,7 +54,11 @@ export default function CapturingScreen({
         <TextPrompt>
           {capturePokemon?.data?.captured === false && (
             <>
-              <h2>Unlucky.. {pokemonToDisplay.data.name} ran away.</h2>
+              <h2>
+                Unlucky..{' '}
+                <span className='capitalize'>{pokemonToDisplay.data.name}</span>{' '}
+                ran away.
+              </h2>
               <div className='flex mt-2 justify-center'>
                 <Button
                   onClick={handleReset}

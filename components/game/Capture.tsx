@@ -62,8 +62,8 @@ export default function Capture({
     inside: {
       scale: 0,
       opacity: 1,
-      x: '-10vw',
-      y: '-10vh',
+      x: '-7vw',
+      y: '-12vh',
       transition: {
         type: 'spring',
         delay: pokeballThrowDuration + 0.4,
@@ -154,127 +154,131 @@ export default function Capture({
     <>
       <AnimatePresence>
         {captureResult && (
-          <CapturingScreen
-            capturePokemon={capturePokemon}
-            pokemonToDisplay={pokemonToDisplay}
-            handleReset={handleReset}
-          />
+          <motion.div exit={{ scale: 0 }}>
+            <CapturingScreen
+              capturePokemon={capturePokemon}
+              pokemonToDisplay={pokemonToDisplay}
+              handleReset={handleReset}
+            />
+          </motion.div>
         )}
       </AnimatePresence>
-      {!captureResult && (
-        <>
-          <div className='w-screen h-screen overflow-hidden bg-gradient-to-t from-green-600 to-green-400'>
-            <div className='pokemon-container top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 absolute mx-auto w-max text-center'>
-              <AnimatePresence>
-                {!flee && (
-                  <>
-                    <motion.img
-                      key={'1'}
-                      src={`https://assets.pokemon.com/assets/cms2/img/pokedex/full/${handleImageNumber()}.png`}
-                      width='400'
-                      height='400'
-                      initial='hidden'
-                      animate={isCapturing ? 'inside' : 'visible'}
-                      variants={pokemonAnimation}
-                      exit={{ scale: 0 }}
-                      className='max-w-full'
-                      onAnimationComplete={onPokemonInside}
-                      alt={pokemonToDisplay?.data?.name || 'image'}
-                    />
-                    <motion.h2
-                      key={'2'}
-                      className='text-6xl text-black italic font-extrabold capitalize'
-                      exit={{ scale: 0 }}
-                    >
-                      {pokemonToDisplay.data.name}{' '}
-                    </motion.h2>
-                  </>
-                )}
-              </AnimatePresence>
+      <AnimatePresence>
+        {!captureResult && (
+          <motion.div exit={{ opacity: 0 }}>
+            <div className='w-screen h-screen overflow-hidden bg-gradient-to-t from-white to-gray-300'>
+              <div className='pokemon-container top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 absolute mx-auto w-max text-center'>
+                <AnimatePresence>
+                  {!flee && (
+                    <>
+                      <motion.img
+                        key={'1'}
+                        src={`https://assets.pokemon.com/assets/cms2/img/pokedex/full/${handleImageNumber()}.png`}
+                        width='400'
+                        height='400'
+                        initial='hidden'
+                        animate={isCapturing ? 'inside' : 'visible'}
+                        variants={pokemonAnimation}
+                        exit={{ scale: 0 }}
+                        className='max-w-full'
+                        onAnimationComplete={onPokemonInside}
+                        alt={pokemonToDisplay?.data?.name || 'image'}
+                      />
+                      <motion.h2
+                        key={'2'}
+                        className='text-6xl text-black italic font-extrabold capitalize'
+                        exit={{ scale: 0 }}
+                      >
+                        {pokemonToDisplay.data.name}{' '}
+                      </motion.h2>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
+              {isCapturing && !isInside && (
+                <div className='pokeball-container relative w-screen h-screen'>
+                  <motion.img
+                    className='left-1/2 text-center absolute bottom-0 '
+                    src='/images/pokeball.png'
+                    alt='pokeball'
+                    animate={isCapturing ? 'capture' : 'noCapture'}
+                    exit={{ scale: 0 }}
+                    variants={pokeballVariants}
+                  />
+                </div>
+              )}
+              {isInside && (
+                <div className='pokeball-container relative w-screen h-screen'>
+                  <motion.img
+                    className='left-1/2 text-center absolute bottom-0 '
+                    src='/images/pokeball.png'
+                    alt='pokeball'
+                    animate={{
+                      x: ['-85%', '-50%'],
+                      y: ['-50vh', '-50vh'],
+                      scale: ['.5', '.8'],
+                      rotate: [1550, 1445],
+                      transition: {
+                        duration: 2,
+                        type: 'spring',
+                      },
+                    }}
+                    onAnimationComplete={onPokeballEnd}
+                  />
+                </div>
+              )}
             </div>
-            {isCapturing && !isInside && (
-              <div className='pokeball-container relative w-screen h-screen'>
-                <motion.img
-                  className='left-1/2 text-center absolute bottom-0 '
-                  src='/images/pokeball.png'
-                  alt='pokeball'
-                  animate={isCapturing ? 'capture' : 'noCapture'}
-                  exit={{ scale: 0 }}
-                  variants={pokeballVariants}
-                />
-              </div>
-            )}
-            {isInside && (
-              <div className='pokeball-container relative w-screen h-screen'>
-                <motion.img
-                  className='left-1/2 text-center absolute bottom-0 '
-                  src='/images/pokeball.png'
-                  alt='pokeball'
-                  animate={{
-                    x: ['-85%', '-50%'],
-                    y: ['-50vh', '-50vh'],
-                    scale: ['.5', '.8'],
-                    rotate: [1550, 1445],
-                    transition: {
-                      duration: 2,
-                      type: 'spring',
-                    },
-                  }}
-                  onAnimationComplete={onPokeballEnd}
-                />
-              </div>
-            )}
-          </div>
-          <TextPrompt>
-            {flee && (
-              <>
-                <h2>
-                  You have successfully ran away from{' '}
-                  <span className='text-black capitalize'>
-                    {pokemonToDisplay.data.name}
-                  </span>
-                </h2>
-                <div className='mt-2 mx-auto text-center'>
-                  <BouncyButton>
+            <TextPrompt>
+              {flee && (
+                <>
+                  <h2>
+                    You have successfully ran away from{' '}
+                    <span className='text-black capitalize'>
+                      {pokemonToDisplay.data.name}
+                    </span>
+                  </h2>
+                  <div className='mt-2 mx-auto text-center'>
+                    <BouncyButton>
+                      <Button
+                        onClick={handleReset}
+                        colorScheme='teal'
+                        variant='solid'
+                      >
+                        Continue
+                      </Button>
+                    </BouncyButton>
+                  </div>
+                </>
+              )}
+
+              {!flee && (
+                <>
+                  <h2>
+                    A wild{' '}
+                    <span className='capitalize font-extrabold text-black'>
+                      {pokemonToDisplay.data.name}
+                    </span>{' '}
+                    appeared, what would you like to do?
+                  </h2>
+                  <div className='grid grid-cols-2 gap-3 mt-2'>
                     <Button
-                      onClick={handleReset}
+                      onClick={handleCapturing}
+                      isLoading={captureIsLoading}
                       colorScheme='teal'
                       variant='solid'
                     >
-                      Continue
+                      Capture!
                     </Button>
-                  </BouncyButton>
-                </div>
-              </>
-            )}
-
-            {!flee && (
-              <>
-                <h2>
-                  A wild{' '}
-                  <span className='capitalize font-extrabold text-black'>
-                    {pokemonToDisplay.data.name}
-                  </span>{' '}
-                  appeared, what would you like to do?
-                </h2>
-                <div className='grid grid-cols-2 gap-3 mt-2'>
-                  <Button
-                    onClick={handleCapturing}
-                    isLoading={captureIsLoading}
-                    colorScheme='teal'
-                    variant='solid'
-                  >
-                    Capture!
-                  </Button>
-                  <Button onClick={handleFlee} isLoading={fleeIsLoading}>
-                    Flee
-                  </Button>
-                </div>
-              </>
-            )}
-          </TextPrompt>
-        </>
-      )}
+                    <Button onClick={handleFlee} isLoading={fleeIsLoading}>
+                      Flee
+                    </Button>
+                  </div>
+                </>
+              )}
+            </TextPrompt>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }

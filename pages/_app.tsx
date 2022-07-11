@@ -5,7 +5,6 @@ import '../styles/globals.css'
 import { ChakraProvider } from '@chakra-ui/react'
 import { SessionProvider } from 'next-auth/react'
 import Header from 'components/layout/Header'
-import superjson from 'superjson'
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
