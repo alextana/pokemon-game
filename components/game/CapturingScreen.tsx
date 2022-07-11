@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import TextPrompt from 'components/ui/TextPrompt'
 import { Button } from '@chakra-ui/react'
+import Link from 'next/link'
 
 export default function CapturingScreen({
   capturePokemon,
@@ -12,6 +13,7 @@ export default function CapturingScreen({
   pokemonToDisplay: any
   handleReset: any
 }) {
+  const [isLoading, setIsLoading] = useState(false)
   return (
     <>
       <motion.div
@@ -19,11 +21,11 @@ export default function CapturingScreen({
         className='w-screen break-normal h-screen overflow-hidden bg-gradient-to-t from-white to-gray-400 text-gray-800'
       >
         <motion.div
-          className='pokemon-container break-normal top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 absolute mx-auto text-center'
+          className='pokemon-container text-2xl break-normal top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 absolute mx-auto text-center'
           animate={{
             opacity: 1,
-            scale: 2,
             transformOrigin: '100%',
+            translateX: '-50%',
             transition: {
               type: 'spring',
               duration: 2,
@@ -32,22 +34,46 @@ export default function CapturingScreen({
         >
           {capturePokemon?.data?.captured === false && (
             <>
-              <span>
-                Could not capture{' '}
-                <span className='capitalize'>{pokemonToDisplay.data.name}</span>
+              <span className='font-extrabold tracking-tighter italic'>
+                <p className='mb-2'>
+                  Could not capture{' '}
+                  <span className='capitalize'>
+                    {pokemonToDisplay.data.name}
+                  </span>
+                </p>
               </span>
+              <Link className='mt-2 text-lg' href='/inventory'>
+                <Button
+                  isLoading={isLoading}
+                  onClick={() => setIsLoading(true)}
+                  colorScheme='teal'
+                  variant='solid'
+                >
+                  View inventory
+                </Button>
+              </Link>
             </>
           )}
           {capturePokemon?.data?.capturedPokemons?.length && (
             <>
-              <span>
+              <span className='font-extrabold tracking-tighter italic'>
                 <span className='capitalize'>{pokemonToDisplay.data.name}</span>{' '}
                 has been captured!
               </span>
-              <p>
+              <p className='text-lg'>
                 You now have {capturePokemon?.data?.capturedPokemons?.length}{' '}
                 Pokemons!
               </p>
+              <Link className='mt-2 text-lg' href='/inventory'>
+                <Button
+                  isLoading={isLoading}
+                  onClick={() => setIsLoading(true)}
+                  colorScheme='teal'
+                  variant='solid'
+                >
+                  View inventory
+                </Button>
+              </Link>
             </>
           )}
         </motion.div>

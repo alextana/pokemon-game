@@ -7,17 +7,15 @@ import { getSession } from 'next-auth/react'
 import { trpc } from 'utils/trpc'
 import Link from 'next/link'
 import { Button } from '@chakra-ui/react'
+import Image from 'next/image'
 
 export default function Inventory({ session }: { session: Session }) {
   const [userData, setUserData] = useState<any>(undefined)
+  const [loading, setIsLoading] = useState<boolean>(false)
 
   trpc.useQuery(['get-user-by-email', { email: session?.user?.email || '' }], {
     onSuccess: setUserData,
   })
-
-  useEffect(() => {
-    console.log(userData)
-  }, [userData])
 
   const handleImageNumber = (pokemon: number) => {
     // add 00 if < 10 and 0 if < 100 but > 10
@@ -47,7 +45,13 @@ export default function Inventory({ session }: { session: Session }) {
           }}
         >
           <Link href='/'>
-            <Button colorScheme='teal' variant='solid' className='mb-2'>
+            <Button
+              isLoading={loading}
+              onClick={() => setIsLoading(true)}
+              colorScheme='teal'
+              variant='solid'
+              className='mb-2'
+            >
               Back
             </Button>
           </Link>
@@ -61,16 +65,12 @@ export default function Inventory({ session }: { session: Session }) {
                   className='inline p-2 border border-gray-200 rounded-2xl'
                   key={Math.random()}
                 >
-                  <motion.img
-                    key={Math.random()}
+                  <Image
                     src={`https://assets.pokemon.com/assets/cms2/img/pokedex/full/${handleImageNumber(
                       pokemon
                     )}.png`}
                     width='120'
                     height='120'
-                    initial='hidden'
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
                     className='max-w-full'
                     alt={`${pokemon}`}
                   />
